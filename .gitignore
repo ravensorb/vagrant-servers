@@ -1,0 +1,6 @@
+# General
+.vagrant/
+
+# Project Specific
+.env*
+!.env.sample

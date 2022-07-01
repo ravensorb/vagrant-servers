@@ -1,0 +1,137 @@
+ansibleExtraParams: ""
+
+no_log: ${CONFIG_NO_LOG:-true}
+debug: ${CONFIG_DEBUG:-false}
+
+file: ${settings_file:-settings.yml}
+debug: ${CONFIG_DEBUG:-false}
+no_log: ${CONFIG_NO_LOG:-true}
+
+git:
+  username: "${CONFIG_GIT_USERNAME:-ravensorb}"
+  email: "${CONFIG_GIT_USEREMAIL:-sanderson@eye-catcher.com}"
+  fullname: "${CONFIG_GIT_FULLNAME:-Shawn Anderson}"
+  branch: "${CONFIG_GIT_BRANCH:-features/settingsfile}"
+
+server:
+  hostname: "${CONFIG_SERVER_HOSTNAME}"
+  fqdn: "${CONFIG_SERVER_FQDN}"
+  network:
+    interface:
+      - name: eth0
+        dhcp: true
+        addresses:
+          - ${CONFIG_SERVER_NETWORK_IP}
+        gateway: ${CONFIG_SERVER_NETWORK_GW}
+        dns:
+          addresses:
+            - ${CONFIG_SERVER_NETWORK_DNS_1}
+            - ${CONFIG_SERVER_NETWORK_DNS_2}
+          search:
+            - ${CONFIG_SERVER_NETWORK_DNS_SEARCH:-ravenwolf.org}
+  addomain:
+    join: ${CONFIG_SERVER_ADDOMAIN_ENABLED:-false}
+    domain: ${CONFIG_SERVER_ADDOMAIN_DOMAINNAME}
+    username: ${CONFIG_SERVER_ADDOMAIN_USERNAME}
+    password: ${CONFIG_SERVER_ADDOMAIN_PASSWORD}
+  drivers:
+    gpu:
+      nvidia:
+        version: 460
+  mounts:
+    - src: ${CONFIG_SERVER_MOUNTS_CERTIFICATES_PATH_REMOTE}
+      dest: /mnt/certificates
+      fstype: cifs
+      opts: "rw,relatime,vers=3.0,file_mode=0755,dir_mode=0755,soft,nounix"
+      credentials:
+        username: ${CONFIG_SERVER_MOUNTS_CERTIFICATES_USERNAME}
+        domain: ${CONFIG_SERVER_MOUNTS_CERTIFICATES_USERDOMAIN}
+        password: ${CONFIG_SERVER_MOUNTS_CERTIFICATES_USERPASSWORD}
+    - src: ${CONFIG_SERVER_MOUNTS_BACKUPS_GENERAL_PATH_REMOTE}
+      dest: /mnt/backups-general
+      fstype: cifs
+      opts: "rw,relatime,vers=3.0,file_mode=0755,dir_mode=0755,soft,nounix"
+      credentials:
+        username: ${CONFIG_SERVER_MOUNTS_BACKUPS_GENERAL_USERNAME}
+        domain: ${CONFIG_SERVER_MOUNTS_BACKUPS_GENERAL_USERDOMAIN}
+        password: ${CONFIG_SERVER_MOUNTS_BACKUPS_GENERAL_USERPASSWORD}
+    - src: ${CONFIG_SERVER_MOUNTS_BACKUPS_DATABASE_PATH_REMOTE}
+      dest: /mnt/backups-database
+      fstype: cifs
+      opts: "rw,relatime,vers=3.0,file_mode=0755,dir_mode=0755,soft,nounix"
+      credentials:
+        username: ${CONFIG_SERVER_MOUNTS_BACKUPS_DATABASE_USERNAME}
+        domain: ${CONFIG_SERVER_MOUNTS_BACKUPS_DATABASE_USERDOMAIN}
+        password: ${CONFIG_SERVER_MOUNTS_BACKUPS_DATABASE_USERPASSWORD}
+
+shell:
+  paths:
+    skel: "/etc/skel"
+    home: "/home"
+  bash:
+    files:
+      aliases: ".bash_aliases"
+      rc: ".bashrc"
+    aliases:
+      - { alias: 'll', command: 'ls -FClah' }
+      - { alias: 'rm', command: 'rm -i' }
+      - { alias: 'dc-up', command: 'docker-compose up -d' }
+      - { alias: 'dc-down', command: 'docker-compose down' }
+      - { alias: 'dc-logs', command: 'docker-compose logs -f' }
+      - { alias: 'cd-dapps', command: 'cd /usr/local/dockerapps' }
+      - { alias: 'cd-dadata', command: 'cd /mnt/docker-appdata-prod' }
+      - { alias: 'ip-ext', command: 'curl ipinfo.io/ip; echo;' }
+      - { alias: 'apt', command: 'sudo apt' }
+      - { alias: 'apt-get', command: 'sudo apt-get' }
+      - { alias: 'histg', command: 'history | grep' }
+      - { alias: '\.\.', command: 'cd ..' }
+      - { alias: '\.\.\.', command: 'cd ../../' }
+      - { alias: '\.\.\.\.', command: 'cd ../../../' }
+      - { alias: 'apt-update', command: 'sudo apt-get update -y && sudo apt-get dist-upgrade && sudo apt-get autoremove -y --purge 1'}
+      - { alias: 'now', command: 'date +''%T''' }
+      - { alias: 'nowtime', command: 'now' }
+      - { alias: 'nowdate', command: 'date +''%Y-%m-%d''' }
+      - { alias: 'nowdatetime', command: 'date +''%Y-%m-%d %T''' }
+      - { alias: 'ports', command: 'netstat -tulanp' }
+    rcextras: false
+
+users:
+  - name: ${CONFIG_USERS_USER1_USERNAME:-dockeruser}
+    uid: ${CONFIG_USERS_USER1_PUID:-2001}
+    group:
+      gid: ${CONFIG_USERS_USER1_PGID:-2001}
+      name: ${CONFIG_USERS_USER1_USERNAME:-dockeruser}
+    password:
+      plain: ${CONFIG_USERS_USER1_PASSWORD}
+      #hash:
+    groups:
+      - ${CONFIG_USERS_USER1_USERNAME:-dockeruser}
+      - docker
+  - name: ${CONFIG_USERS_USER2_USERNAME:-dockeradmin}
+    uid: ${CONFIG_USERS_USER2_PUID:-2002}
+    group:
+      gid: ${CONFIG_USERS_USER2_PGID:-2002}
+      name: ${CONFIG_USERS_USER2_USERNAME:-dockeradmin}
+    password:
+      plain: ${CONFIG_USERS_USER2_PASSWORD}
+      #hash:
+    groups:
+      - ${CONFIG_USERS_USER2_USERNAME:-dockeradmin}
+      - docker
+      - sudo
+
+apps:
+  docker:
+    enabled: true
+    nvidia: ${CONFIG_APPS_DOCKER_NVIDIA_ENABLED:-false}
+  powershell:
+    enabled: true
+  openiscsi:
+    enabled: true
+    portal: ${CONFIG_APPS_OPENISCSI_PORTAL_IP}
+    targets:
+      - name: ${CONFIG_APPS_OPENISCSI_TARGET_DOCKERAPPDATA_NAME}
+        uuid: ${CONFIG_APPS_OPENISCSI_TARGET_DOCKERAPPDATA_UUID}
+        mount: /mnt/docker-appdata
+        fstype: ext4
+
